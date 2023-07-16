@@ -4,5 +4,6 @@ zig-out/
 /logs/
 /scratch/
 /data/
-/secrets/
+/secrets/*
+!/secrets/.gitkeep
 docker-compose.yml
