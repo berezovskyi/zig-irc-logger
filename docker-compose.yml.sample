@@ -2,6 +2,9 @@
 version: '2.4'
 
 x-ZIGVER: &ZIGVER 'ZIGVER=0.10.1'
+x-ZIGDEV: &ZIGDEV 'ZIGDEV=false'
+# x-ZIGVER: &ZIGVER 'ZIGVER=0.11.0-dev.4003+c6aa29b6f'
+# x-ZIGDEV: &ZIGDEV 'ZIGDEV=true'
 
 services:
     # 1) Avoid bespoke tags
@@ -12,6 +15,7 @@ services:
         dockerfile: Dockerfile.logger
         args:
           - *ZIGVER
+          - *ZIGDEV
       # unless-stopped is not what you think it is
       restart: always
       environment:
@@ -34,6 +38,7 @@ services:
           - 'GIT_USER=John Doe'
           - 'GIT_EMAIL=john@example.com'
           - *ZIGVER
+          - *ZIGDEV
       restart: always
       # environment:
         # - ZIGIRC_LOGS=/logs

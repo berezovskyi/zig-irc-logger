@@ -1,5 +1,6 @@
 FROM alpine:3.13 as builder
 ARG ZIGVER=0.10.1
+ARG ZIGDEV=false
 
 RUN apk update && \
     apk add \
@@ -8,9 +9,12 @@ RUN apk update && \
 
 RUN mkdir -p /opt
 WORKDIR /opt
-RUN curl https://ziglang.org/download/${ZIGVER}/zig-linux-x86_64-${ZIGVER}.tar.xz  -O && \
+RUN { ! ${ZIGDEV} && curl https://ziglang.org/download/${ZIGVER}/zig-linux-x86_64-${ZIGVER}.tar.xz  -O && \
     tar xf zig-linux-x86_64-${ZIGVER}.tar.xz && \
-    mv zig-linux-x86_64-${ZIGVER}/ zig/
+    mv zig-linux-x86_64-${ZIGVER}/ zig/ ; } || true
+RUN { ${ZIGDEV} && curl https://ziglang.org/builds/zig-linux-x86_64-${ZIGVER}.tar.xz  -O && \
+    tar xf zig-linux-x86_64-${ZIGVER}.tar.xz && \
+    mv zig-linux-x86_64-${ZIGVER}/ zig/ ; } || true
 
 COPY . /app
 WORKDIR /app
