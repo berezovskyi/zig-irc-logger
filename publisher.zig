@@ -97,9 +97,9 @@ pub fn go(logger_dir: []const u8, log_repo_path: []const u8) !u8 {
     //    return 1;
     //}
 
-    if (.published == try publishFiles(logger_dir, log_repo_path, log_repo_dir)) {
-        try pushRepoChange(log_repo_path);
-    }
+    _ = try publishFiles(logger_dir, log_repo_path, log_repo_dir);
+    // do a push on startup regardless
+    try pushRepoChange(log_repo_path);
 
     const inotify_fd = try os.inotify_init1(0); // linux.IN_CLOEXEC??
     const watch_fd = os.inotify_add_watch(inotify_fd, logger_dir, linux.IN.MOVED_TO) catch |e| switch(e) {
@@ -142,7 +142,7 @@ pub fn go(logger_dir: []const u8, log_repo_path: []const u8) !u8 {
             if (.none == try publishFiles(logger_dir, log_repo_path, log_repo_dir)) {
                 std.log.warn("publishFiles did not publish anything?", .{});
             } else {
-                try pushRepoChange(log_repo_path);
+                try commitAndPushRepoChange(log_repo_path);
             }
             offset += event_size;
             if (offset == read_result)
@@ -315,10 +315,14 @@ fn runCaptureOuts(allocator: std.mem.Allocator, cwd: []const u8, argv: []const [
 
 const live_update_msg = "live update";
 
-fn pushRepoChange(log_repo_path: []const u8) !void {
+fn commitAndPushRepoChange(log_repo_path: []const u8) !void {
     //try run(log_repo_path, &[_][]const u8 {"git", "status"});
     try runNoCapture(log_repo_path, &[_][]const u8 {"git", "add", "."});
     try runNoCapture(log_repo_path, &[_][]const u8 {"git", "commit", "-m", live_update_msg});
+    try pushRepoChange(log_repo_path);
+}
+
+fn pushRepoChange(log_repo_path: []const u8) !void {
     try runNoCapture(log_repo_path, &[_][]const u8 {"git", "push", "origin", "HEAD:live", "-f"});
 }
 

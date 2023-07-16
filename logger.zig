@@ -193,7 +193,8 @@ pub fn go(server: []const u8, user: []const u8, channel: []const u8, out_dir_pat
             }
             newline_index = mem.indexOfPos(u8, buf[0..len], msg_start, "\r\n") orelse {
                 data_len = len - msg_start;
-                //try log_writer.print("[DEBUG] saving {} bytes... '{s}'\n", .{data_len, buf[msg_start..len]});
+                // TODO: track down the cause of a crash 
+                log_event.debug("[DEBUG] saving {} bytes... '{s}'\n", .{data_len, buf[msg_start..len]});
                 mem.copy(u8, buf[0..data_len], buf[msg_start..len]);
                 break;
             };

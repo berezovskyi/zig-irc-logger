@@ -3,3 +3,6 @@ zig-out/
 /dep/
 /logs/
 /scratch/
+/data/
+/secrets/
+docker-compose.yml

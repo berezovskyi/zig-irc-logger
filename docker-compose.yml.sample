@@ -1,0 +1,47 @@
+# Due to https://github.com/docker/compose/issues/4513#issuecomment-327159797
+version: '2.4'
+
+x-ZIGVER: &ZIGVER 'ZIGVER=0.10.0'
+
+services:
+    # 1) Avoid bespoke tags
+    # 2) Preserve all the runtime args
+    zig-irc-logger:
+      build: 
+        context: ./
+        dockerfile: Dockerfile.logger
+      args:
+        - *ZIGVER
+      # unless-stopped is not what you think it is
+      restart: always
+      environment:
+        - ZIGIRC_SERVER=irc.eu.libera.chat
+        - ZIGIRC_USER=ziglogger_BAADF00D
+        # - ZIGIRC_CHAN=zig
+        - ZIGIRC_CHAN=#zig_BAADF00D
+        # for debug, in case the zig chan is not active
+        # - ZIGIRC_CHAN=linux
+      volumes:
+        - ./data/irc_logs:/logs
+      cpus: 1
+      mem_limit: 128m
+
+    zig-irc-publisher:
+      build: 
+        context: ./
+        dockerfile: Dockerfile.publisher
+        args:
+          - GIT_USER=John von Neumann
+          - GIT_EMAIL=john@example.com
+          - *ZIGVER
+      restart: always
+      # environment:
+        # - ZIGIRC_LOGS=/logs
+        # - ZIGIRC_REPO=/repo
+      volumes:
+        - ./data/irc_logs:/logs
+        - ./secrets:/root/.ssh
+        # - ./secrets:/root/.ssh:ro
+        - ./data/repo:/repo
+      cpus: 1
+      mem_limit: 128m

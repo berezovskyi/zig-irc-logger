@@ -1,0 +1,31 @@
+FROM alpine:3.13 as builder
+ARG ZIGVER=0.10.1
+
+RUN apk update && \
+    apk add \
+        curl \
+        xz
+
+RUN mkdir -p /opt
+WORKDIR /opt
+RUN curl https://ziglang.org/download/${ZIGVER}/zig-linux-x86_64-${ZIGVER}.tar.xz  -O && \
+    tar xf zig-linux-x86_64-${ZIGVER}.tar.xz && \
+    mv zig-linux-x86_64-${ZIGVER}/ zig/
+
+COPY . /app
+WORKDIR /app
+RUN /opt/zig/zig build -Dtarget=x86_64-linux
+
+FROM debian:12-slim
+
+ENV LANG C.UTF-8
+ARG DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /app
+
+# COPY /zig-out/bin/ ./
+COPY --from=builder /app/zig-out/bin/ ./
+
+RUN apt-get update -qq && apt-get upgrade -y
+
+CMD ["sh", "-c", "/app/irc-logger --server ${ZIGIRC_SERVER:-irc.eu.libera.chat} --user ${ZIGIRC_USER:-BAADF00D} --channel ${ZIGIRC_CHAN:-linux} --dir /logs"]

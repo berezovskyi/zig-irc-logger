@@ -1,0 +1,15 @@
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  test-compose-action:
+    runs-on: ubuntu-latest
+    name: Zig build
+    steps:
+      - uses: actions/checkout@v3
+      - name: Zig build 0.10.1
+        run: docker-compose build --build-arg "ZIGVER=0.10.1"
