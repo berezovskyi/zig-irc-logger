@@ -31,7 +31,7 @@ services:
         context: ./
         dockerfile: Dockerfile.publisher
         args:
-          - GIT_USER=John von Neumann
+          - GIT_USER='John von Neumann'
           - GIT_EMAIL=john@example.com
           - *ZIGVER
       restart: always
