@@ -26,4 +26,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Docker Compose multi-stage build
-        run: docker-compose -f docker-compose.yml.sample build --build-arg "ZIGVER=0.10.1"
+        run: docker-compose -f docker-compose.yml.sample build --build-arg "ZIGVER=${{ matrix.zigver }}"
