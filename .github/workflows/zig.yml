@@ -17,13 +17,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        zigver: 
-        - '0.9.0'
-        - '0.9.1'
-        - '0.10.0'
-        - '0.10.1'
-        - '0.11.0-dev.4003+c6aa29b6f'
+        include:
+        - zigver: '0.9.0'
+          zigdev: false
+        - zigver: '0.9.1'
+          zigdev: false
+        - zigver: '0.10.0'
+          zigdev: false
+        - zigver: '0.10.1'
+          zigdev: false
+        - zigver: '0.11.0-dev.4003+c6aa29b6f'
+          zigdev: true
     steps:
       - uses: actions/checkout@v3
       - name: Docker Compose multi-stage build
-        run: docker-compose -f docker-compose.yml.sample build --build-arg "ZIGVER=${{ matrix.zigver }}"
+        run: docker-compose -f docker-compose.yml.sample build --build-arg "ZIGVER=${{ matrix.zigver }}" --build-arg "ZIGDEV=${{ matrix.zigdev }}"
