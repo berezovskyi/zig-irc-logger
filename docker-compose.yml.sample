@@ -10,8 +10,8 @@ services:
       build: 
         context: ./
         dockerfile: Dockerfile.logger
-      args:
-        - *ZIGVER
+        args:
+          - *ZIGVER
       # unless-stopped is not what you think it is
       restart: always
       environment:

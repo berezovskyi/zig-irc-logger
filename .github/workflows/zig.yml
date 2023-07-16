@@ -17,4 +17,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Zig build 0.10.1
-        run: docker-compose build -f docker-compose.yml.sample --build-arg "ZIGVER=0.10.1"
+        run: docker-compose -f docker-compose.yml.sample build --build-arg "ZIGVER=0.10.1"
