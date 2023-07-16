@@ -1,7 +1,7 @@
 # Due to https://github.com/docker/compose/issues/4513#issuecomment-327159797
 version: '2.4'
 
-x-ZIGVER: &ZIGVER 'ZIGVER=0.10.0'
+x-ZIGVER: &ZIGVER 'ZIGVER=0.10.1'
 
 services:
     # 1) Avoid bespoke tags
@@ -31,8 +31,8 @@ services:
         context: ./
         dockerfile: Dockerfile.publisher
         args:
-          - GIT_USER='John von Neumann'
-          - GIT_EMAIL=john@example.com
+          - 'GIT_USER=John Doe'
+          - 'GIT_EMAIL=john@example.com'
           - *ZIGVER
       restart: always
       # environment:
