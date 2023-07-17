@@ -26,6 +26,9 @@ jobs:
           zigdev: false
         - zigver: '0.10.1'
           zigdev: false
+        # https://marler8997.github.io/zig-unofficial-releases/
+        - zigver: '0.11.0-dev.1507+6f13a725a'
+          zigdev: true
         - zigver: '0.11.0-dev.4003+c6aa29b6f'
           zigdev: true
     steps:
