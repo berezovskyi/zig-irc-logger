@@ -325,7 +325,9 @@ fn commitAndPushRepoChange(log_repo_path: []const u8) !void {
 fn pushRepoChange(log_repo_path: []const u8) !void {
     try runNoCapture(log_repo_path, &[_][]const u8 {"git", "push", "origin", "HEAD:live", "--force-with-lease"});
     // don't push to GH more frequently than once in 15 minutes
-    std.time.sleep(@as(u64, 15 * 60) * std.time.ns_per_s); 
+    const sleep_min = 15;
+    std.log.info("Sleeping for {} min between pushes", .{sleep_min});
+    std.time.sleep(@as(u64, sleep_min * 60) * std.time.ns_per_s); 
 }
 
 fn formatRepoLogFilename(buf: []u8, year_day: epoch.YearAndDay, month_day: epoch.MonthAndDay) usize {
