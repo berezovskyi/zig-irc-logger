@@ -18,10 +18,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - zigver: '0.9.0'
-          zigdev: false
-        - zigver: '0.9.1'
-          zigdev: false
+        # no member named 'mode' in struct 'std.fs.file.OpenFlags'
+        # - zigver: '0.9.0'
+        #   zigdev: false
+        # - zigver: '0.9.1'
+        #   zigdev: false
         - zigver: '0.10.0'
           zigdev: false
         - zigver: '0.10.1'
@@ -29,11 +30,11 @@ jobs:
         # https://marler8997.github.io/zig-unofficial-releases/
         - zigver: '0.11.0-dev.1507+6f13a725a'
           zigdev: true
+        # no field or member function named 'standardReleaseOptions' in 'Build' 
         - zigver: '0.11.0-dev.4003+c6aa29b6f'
           zigdev: true
     steps:
       - uses: actions/checkout@v3
       - name: Docker Compose multi-stage build
         run: |
-          zig version
           docker-compose -f docker-compose.yml.sample build --build-arg "ZIGVER=${{ matrix.zigver }}" --build-arg "ZIGDEV=${{ matrix.zigdev }}"

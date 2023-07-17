@@ -18,7 +18,7 @@ RUN { ${ZIGDEV} && curl https://ziglang.org/builds/zig-linux-x86_64-${ZIGVER}.ta
 
 COPY . /app
 WORKDIR /app
-RUN /opt/zig/zig build -Dtarget=x86_64-linux
+RUN /opt/zig/zig version && /opt/zig/zig build -Dtarget=x86_64-linux
 
 FROM debian:12-slim
 
