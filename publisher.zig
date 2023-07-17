@@ -329,7 +329,7 @@ fn pushRepoChange(log_repo_path: []const u8) !void {
     std.log.info("Sleeping for {} min between pushes", .{sleep_min});
     std.time.sleep(@as(u64, sleep_min * 60) * std.time.ns_per_s); 
     // Logging due to https://github.com/ziglang/zig/blob/c6aa29b6fdba1606bfd218b17de89f64179c0ed8/lib/std/time.zig#L10
-    std.log.info("Wakeup", .{sleep_min});
+    std.log.info("Wakeup", .{});
 }
 
 fn formatRepoLogFilename(buf: []u8, year_day: epoch.YearAndDay, month_day: epoch.MonthAndDay) usize {
