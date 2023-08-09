@@ -27,8 +27,12 @@ jobs:
           zigdev: false
         - zigver: '0.10.1'
           zigdev: false
+        - zigver: '0.11.0'
+          zigdev: false
         # https://marler8997.github.io/zig-unofficial-releases/
         - zigver: '0.11.0-dev.1507+6f13a725a'
+          zigdev: true
+        - zigver: '0.12.0-dev.25+36c57c3ba'
           zigdev: true
         # no field or member function named 'standardReleaseOptions' in 'Build' 
         - zigver: '0.11.0-dev.4003+c6aa29b6f'
