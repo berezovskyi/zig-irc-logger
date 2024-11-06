@@ -56,7 +56,7 @@ fn getArgOption(args: [][]const u8, i: *usize) []const u8 {
     i.* = i.* + 1;
     if (i.* >= args.len) {
         std.log.err("option {s} requires an argument", .{args[i.* - 1]});
-        std.os.exit(1);
+        std.process.exit(1);
     }
     return args[i.*];
 }
@@ -126,7 +126,7 @@ pub fn go(server: []const u8, user: []const u8, channel: []const u8, out_dir_pat
     const login = null;
 
     // first clean the partial files in out_dir in case there were any leftover from a previous run
-    var next_msg_num = try cleanPartialFilesAndFindNextMsgNum(out_dir_path);
+    const next_msg_num = try cleanPartialFilesAndFindNextMsgNum(out_dir_path);
     log_event.info("next msg num is {}", .{next_msg_num});
 
     var buf = try std.heap.page_allocator.alloc(u8, 4096);
@@ -150,7 +150,8 @@ pub fn go(server: []const u8, user: []const u8, channel: []const u8, out_dir_pat
         while (true) {
             const timeout_seconds = state.getPingTimeout(try getTimestamp());
             // note: this only works with ssl disabled at the moment
-            switch (try waitFdTimeoutMillis(stream.net_stream.handle, @intCast(i32, timeout_seconds * 1000))) {
+            // i32
+            switch (try waitFdTimeoutMillis(stream.net_stream.handle, @intCast(timeout_seconds * 1000))) {
                 .fd_ready => break,
                 .timeout => try state.hitPingTimeout(server, writer),
             }
@@ -195,20 +196,20 @@ pub fn go(server: []const u8, user: []const u8, channel: []const u8, out_dir_pat
                 data_len = len - msg_start;
                 // TODO: track down the cause of a crash 
                 log_event.debug("[DEBUG] saving {} bytes... '{s}'\n", .{data_len, buf[msg_start..len]});
-                mem.copy(u8, buf[0..data_len], buf[msg_start..len]);
+                mem.copyForwards(u8, buf[0..data_len], buf[msg_start..len]);
                 break;
             };
         }
     }
 }
 
-fn waitFdTimeoutMillis(fd: std.os.fd_t, millis_timeout: i32) !enum { fd_ready, timeout } {
-    var fds = [_]std.os.pollfd { .{
+fn waitFdTimeoutMillis(fd: std.posix.fd_t, millis_timeout: i32) !enum { fd_ready, timeout } {
+    var fds = [_]std.posix.pollfd { .{
         .fd = fd,
-        .events = std.os.POLL.IN,
+        .events = std.os.linux.POLL.IN,
         .revents = 0,
     } };
-    const result = try std.os.poll(&fds, millis_timeout);
+    const result = try std.posix.poll(&fds, millis_timeout);
     return switch (result) {
         0 => .timeout,
         1 => .fd_ready,
@@ -270,7 +271,7 @@ const ClientState = struct {
             .sent => |state| state.give_up_time,
         };
         if (now >= event_time) return 0;
-        return @intCast(u31, event_time - now);
+        return @intCast(event_time - now);
     }
 
     pub fn hitPingTimeout(self: *ClientState, server: []const u8, writer: anytype) !void {
@@ -403,9 +404,9 @@ const ClientState = struct {
 };
 
 fn getTimestamp() !u64 {
-    var ts: os.timespec = undefined;
-    try os.clock_gettime(os.CLOCK.REALTIME, &ts);
-    return @intCast(u64, ts.tv_sec);
+    var ts: std.posix.timespec = undefined;
+    try std.posix.clock_gettime(std.os.linux.CLOCK.REALTIME, &ts);
+    return @intCast(ts.tv_sec);
 }
 
 fn makeNamePath(buf: []u8, out_dir_path: []const u8, msg_num: u32) usize {
@@ -436,7 +437,7 @@ fn writeMsg(out_dir_path: []const u8, msg_num: u32, timestamp: u64, from: []cons
 }
 
 fn dirIsEmpty(path: []const u8) !bool {
-    var dir = try std.fs.cwd().openIterableDir(path, .{.access_sub_paths=true});
+    var dir = try std.fs.cwd().openDir(path, .{.access_sub_paths=true});
     defer dir.close();
     var it = dir.iterate();
     return if (try it.next()) |_| false else true;
@@ -445,10 +446,10 @@ fn dirIsEmpty(path: []const u8) !bool {
 fn cleanPartialFilesAndFindNextMsgNum(out_dir_path: []const u8) !u32 {
     var next_msg_num: u32 = 0;
     var clean_count: usize = 0;
-    var it_dir = std.fs.cwd().openIterableDir(out_dir_path, .{.access_sub_paths=true}) catch |err| switch(err) {
+    var it_dir = std.fs.cwd().openDir(out_dir_path, .{.access_sub_paths=true}) catch |err| switch(err) {
         error.FileNotFound => {
             std.log.err("--dir option '{s}' does not exist, giving up in case it was a typo", .{out_dir_path});
-            std.os.exit(0xff);
+            std.process.exit(0xff);
         },
         else => |e| return e,
     };
@@ -457,7 +458,7 @@ fn cleanPartialFilesAndFindNextMsgNum(out_dir_path: []const u8) !u32 {
     while (try it.next()) |entry| {
         if (std.mem.endsWith(u8, entry.name, ".partial")) {
             std.log.info("removing '{s}/{s}'", .{out_dir_path, entry.name});
-            try it_dir.dir.deleteFile(entry.name);
+            try it_dir.deleteFile(entry.name);
             clean_count += 1;
         } else {
             const num = std.fmt.parseInt(u32, entry.name, 10) catch {
